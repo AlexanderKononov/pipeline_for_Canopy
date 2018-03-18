@@ -100,10 +100,13 @@ def writeFileWsByDictCNA(file_dict, cna_list, WM = 'WMout.txt', Wm = 'Wmout.txt'
     f_wWm.close()
 
 # Take file with SNV and return list of target columns and list of samples name
-def sampleNameFinderSNV(f_rName):
+def sampleNameFinderSNV(f_rName, IDfilterc =  True):
     f_r = open(f_rName, 'r')
     heder = f_r.readline().strip().split()
-    col_map = [0, 1]
+    if IDfilterc:
+        col_map = [0, 1, 4]
+    else:
+        col_map = [0, 1, 4]
     name_list = []
     for i in range(len(heder)):
         if heder[i].find('.AD') != -1:
@@ -115,7 +118,7 @@ def sampleNameFinderSNV(f_rName):
     return col_map, name_list
 
 # Take file with SNV, list of column and samples names and return X and R matrixs
-def fullMatrixXR(f_rName, col_map):
+def fullMatrixXR(f_rName, col_map, IDfilter = True):
     f_r = open(f_rName, 'r')
     SNV_list = []
     R_matrix = []
@@ -127,12 +130,18 @@ def fullMatrixXR(f_rName, col_map):
         if (l[col_map[0]]+l[col_map[1]]).find('NA') != -1:
             line = f_r.readline()
             continue
+        if IDfilter and len(l[col_map[2]].strip('"')) <= 2:
+            line = f_r.readline()
+            continue
         R = []
         X = []
         SNV_list.append([int(l[col_map[0]].strip('"').replace('chr', '').replace('X', '23').replace('Y', '24').replace('M', '25')), int(l[col_map[1]].strip('"'))])
         R.append(str(SNV_list[-1][0]) + ':' + str(SNV_list[-1][1]))
         X.append(str(SNV_list[-1][0]) + ':' + str(SNV_list[-1][1]))
-        i = 2
+        if IDfilter:
+            i = 3
+        else:
+            i = 2
         isNA = False
         while i < len(col_map):
             if len(l[col_map[i]].split(',')) <= 1:
