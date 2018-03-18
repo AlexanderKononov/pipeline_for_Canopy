@@ -8,7 +8,7 @@ print('---Start---')
 # Preparing of SNV data
 col_for_SNV, sample_name = functions.sampleNameFinderSNV(arg[1])
 print('---sampleNameFinderSNV done---')
-X_matrix, R_matrix, SNV_list = functions.fullMatrixXR(arg[1], col_for_SNV)
+R_matrix, X_matrix, SNV_list = functions.fullMatrixXR(arg[1], col_for_SNV)
 print('---fullMatrixXR done---')
 functions.writeFileXRByMatrix(X_matrix, R_matrix, sample_name)
 print('----SNV data were done---')
@@ -27,7 +27,7 @@ functions.createYFile(SNV_list, CNA_list)
 print('----createYFile was done---')
 
 # Preparing of CNA and SNV overlapping
-functions.createCFile(CNA_list)
+functions. createCChrFile(CNA_list)
 
 
 

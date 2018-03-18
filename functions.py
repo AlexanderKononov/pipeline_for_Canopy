@@ -118,8 +118,8 @@ def sampleNameFinderSNV(f_rName):
 def fullMatrixXR(f_rName, col_map):
     f_r = open(f_rName, 'r')
     SNV_list = []
-    X_matrix = []
     R_matrix = []
+    X_matrix = []
     line = f_r.readline()
     line = f_r.readline()
     while line != '':
@@ -127,29 +127,32 @@ def fullMatrixXR(f_rName, col_map):
         if (l[col_map[0]]+l[col_map[1]]).find('NA') != -1:
             line = f_r.readline()
             continue
-        X = []
         R = []
+        X = []
         SNV_list.append([int(l[col_map[0]].strip('"').replace('chr', '').replace('X', '23').replace('Y', '24').replace('M', '25')), int(l[col_map[1]].strip('"'))])
-        X.append(str(SNV_list[-1][0]) + ':' + str(SNV_list[-1][1]))
         R.append(str(SNV_list[-1][0]) + ':' + str(SNV_list[-1][1]))
+        X.append(str(SNV_list[-1][0]) + ':' + str(SNV_list[-1][1]))
         i = 2
         isNA = False
         while i < len(col_map):
             if len(l[col_map[i]].split(',')) <= 1:
                 isNA = True
                 break
-            X.append(int(l[col_map[i]].split(',')[1].strip('"')))
-            R.append(int(l[col_map[i + 1]].strip('"')))
+            R.append(int(l[col_map[i]].split(',')[1].strip('"')))
+            X.append(int(l[col_map[i + 1]].strip('"')))
             i += 2
+            if R[-1] == X[-1]:
+                isNA = True
+                break
         if isNA:
             SNV_list.pop(-1)
             line = f_r.readline()
             continue
-        X_matrix.append(X)
         R_matrix.append(R)
+        X_matrix.append(X)
         line = f_r.readline()
     f_r.close()
-    return X_matrix, R_matrix, SNV_list
+    return R_matrix, X_matrix, SNV_list
 
 # Take X and R matrixs SNV and write X and R file
 def writeFileXRByMatrix(X_matrix, R_matrix, name_list, X = 'Xout.txt', R = 'Rout.txt'):
@@ -197,17 +200,25 @@ def sampleFilerToCNAFile(f_rName, sample_names, f_wName = 'CNA_for_target_patien
 # create Y file with ovelopping of SNV and CNA segments by SNV and CNA lists
 def createYFile(SNV_list, CNA_list, f_wName = 'Yout.txt'):
     f_w = open(f_wName, 'w')
-    f_w.write('mut')
+    f_w.write('mut\tnon-cna_region')
     for i in CNA_list:
         f_w.write('\t' + str(i[0]) + ':' + str(i[1])+ ':' + str(i[2]))
     f_w.write('\n')
     for i in SNV_list:
         f_w.write(str(i[0]) + ':' + str(i[1]))
+        line = ''
+        non_CNA = True
         for j in CNA_list:
             if i[0] == j[0] and i[1] >= j[1] and i[1] <= j[2]:
-                f_w.write('\t' + '1')
+                line += '\t1'
+                non_CNA = False
             else:
-                f_w.write('\t' + '0')
+                line += '\t0'
+        if non_CNA:
+            f_w.write('\t' + '1')
+        else:
+            f_w.write('\t' + '0')
+        f_w.write(line)
         f_w.write('\n')
     f_w.close()
 
@@ -224,7 +235,27 @@ def createCFile(CNA_list, f_wName = 'Cout.txt'):
             if i[0] != j[0] or (i[1] > j[2] or i[2] < j[1]):
                 f_w.write('\t' + '0')
             else:
+                f_w.write('\t' + '1')
+        f_w.write('\n')
+    f_w.close()
+
+# create C file with ovelopping of CNA segments with chromosomes by CNA lists
+def createCChrFile(CNA_list, f_wName = 'Cout.txt'):
+    f_w = open(f_wName, 'w')
+    f_w.write('CNAs')
+    chr_list = [CNA_list[0][0]]
+    for i in CNA_list:
+        if i[0] not in chr_list:
+            chr_list.append(i[0])
+        f_w.write('\t' + str(i[0]) + ':' + str(i[1])+ ':' + str(i[2]))
+    f_w.write('\n')
+    for i in chr_list:
+        f_w.write(str(i))
+        for j in CNA_list:
+            if i != j[0]:
                 f_w.write('\t' + '0')
+            else:
+                f_w.write('\t' + '1')
         f_w.write('\n')
     f_w.close()
 
