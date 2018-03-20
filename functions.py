@@ -51,6 +51,10 @@ def fullDictCNA(f_rName, samples_list):
             cna_list.sort(key=lambda x: [x[0], x[1], x[2]])
             sample_name = line[0].strip('"')
 
+        # Adecvati check
+        if line[5].strip('"') == '1' and line[6].strip('"') == '1':
+            line = f_r.readline().strip().split()
+            break
         # Save coordinates of segment
         cna = [int(line[2].strip('"').replace('chr', '').replace('X', '23').replace('Y', '24').replace('M', '25')), int(line[3].strip('"')), int(line[4].strip('"'))]
 
@@ -207,17 +211,17 @@ def sampleFilerToCNAFile(f_rName, sample_names, f_wName = 'CNA_for_target_patien
     return f_wName
 
 # create Y file with ovelopping of SNV and CNA segments by SNV and CNA lists
-def createYFile(SNV_list, CNA_list, f_wName = 'Yout.txt'):
+def createYFile(SNV_list, CNA_regions, f_wName = 'Yout.txt'):
     f_w = open(f_wName, 'w')
     f_w.write('mut\tnon-cna_region')
-    for i in CNA_list:
+    for i in CNA_regions:
         f_w.write('\t' + str(i[0]) + ':' + str(i[1])+ ':' + str(i[2]))
     f_w.write('\n')
     for i in SNV_list:
         f_w.write(str(i[0]) + ':' + str(i[1]))
         line = ''
         non_CNA = True
-        for j in CNA_list:
+        for j in CNA_regions:
             if i[0] == j[0] and i[1] >= j[1] and i[1] <= j[2]:
                 line += '\t1'
                 non_CNA = False
@@ -248,34 +252,31 @@ def createCFile(CNA_list, f_wName = 'Cout.txt'):
         f_w.write('\n')
     f_w.close()
 
-# create C file with ovelopping of CNA segments with chromosomes by CNA lists
-def createCChrFile(CNA_list, f_wName = 'Cout.txt'):
+# create C file with ovelopping of CNA segments by CNA regions
+def createCByRegionsFile(CNA_list, CNA_regions, overlap_dict, f_wName = 'Cout.txt'):
     f_w = open(f_wName, 'w')
     f_w.write('CNAs')
-    chr_list = [CNA_list[0][0]]
     for i in CNA_list:
-        if i[0] not in chr_list:
-            chr_list.append(i[0])
         f_w.write('\t' + str(i[0]) + ':' + str(i[1])+ ':' + str(i[2]))
     f_w.write('\n')
-    for i in chr_list:
-        f_w.write(str(i))
+    for i in CNA_regions:
+        f_w.write(str(i[1]) + ':' + str(i[2])+ ':' + str(i[3]))
         for j in CNA_list:
-            if i != j[0]:
-                f_w.write('\t' + '0')
-            else:
+            if j in overlap_dict[i[0]]:
                 f_w.write('\t' + '1')
+            else:
+                f_w.write('\t' + '0')
         f_w.write('\n')
     f_w.close()
 
 # Redesigne CNA dictionary and CNA_list to merge similar segments
-def redesigneCNADict(CNA_dict, CNA_list, step = 10000):
+def redesigneCNADict(CNA_dict, CNA_list, step = 1000):
     association_dict = {}
-    clusters = [[-1,0,0,0,0,0]]
+    merge_CNA = [[-1,0,0,0,0,0]]
     number_code = 0
     for i in CNA_list:
         find_cluster = False
-        for j in clusters:
+        for j in merge_CNA:
             if i[0] == j[1] and ((j[2] - step) <= i[1] <= (j[3] + step)) and ((j[4] - step) <= i[2] <= (j[5] + step)):
                 find_cluster = True
                 association_dict[j[0]].append(i)
@@ -286,17 +287,17 @@ def redesigneCNADict(CNA_dict, CNA_list, step = 10000):
                 break
         if find_cluster:
             continue
-        clusters.append([number_code, i[0], i[1], i[1], i[2], i[2]])
+        merge_CNA.append([number_code, i[0], i[1], i[1], i[2], i[2]])
         association_dict[number_code] = [i]
         number_code += 1
-    clusters.pop(0)
+    merge_CNA.pop(0)
     new_CNA_list = []
-    for  i in clusters:
+    for  i in merge_CNA:
         new_CNA_list.append([i[1], i[2], i[5]])
     new_CNA_dict = {}
     for i in CNA_dict.keys():
         new_CNA_dict[i] = {}
-        for j in clusters:
+        for j in merge_CNA:
             minor = '1'
             major = '1'
             for k in association_dict[j[0]]:
@@ -306,7 +307,30 @@ def redesigneCNADict(CNA_dict, CNA_list, step = 10000):
                 if CNA_dict[i][key_CNA][1] != '1':
                     minor = CNA_dict[i][key_CNA][1]
             new_CNA_dict[i][str(j[1]) + ':' + str(j[2]) + ':' + str(j[5])] = [major, minor]
-    print('CNA data was redesign from ' + str(len(CNA_list)) +' CNAs to ' + str(len(clusters)) + ' CNAs')
+    print('CNA data was redesign from ' + str(len(CNA_list)) +' CNAs to ' + str(len(merge_CNA)) + ' CNAs')
     return new_CNA_dict, new_CNA_list
+
+# clastering  overlapped CNAs in CNA regions by CNA list
+def finderCNAregioonsOverlaping(CNA_list):
+    CNA_regions = [[-1, 0, 0, 0]]
+    overlap_dict = {}
+    number_code = 0
+    for i in CNA_list:
+        find_overlap = False
+        for j in CNA_regions:
+            if i[0] == j[1] and (j[2] <= i[1] <= j[3] or j[2] <= i[2] <= j[3]):
+                find_overlap = True
+                overlap_dict[j[0]].append(i)
+                j[2] = min(j[2], i[1])
+                j[3] = max(j[3], i[2])
+                break
+        if find_overlap:
+            continue
+        CNA_regions.append([number_code, i[0], i[1], i[2]])
+        overlap_dict[number_code] = [i]
+        number_code += 1
+    CNA_regions.pop(0)
+    return overlap_dict, CNA_regions
+
 
 

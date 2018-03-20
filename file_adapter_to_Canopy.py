@@ -23,11 +23,10 @@ functions.writeFileWsByDictCNA(CNA_dict, CNA_list)
 print('----CNA data were done---')
 
 # Preparing of CNA and SNV overlapping
-functions.createYFile(SNV_list, CNA_list)
-print('----createYFile was done---')
+overlap_dict, CNA_regions = functions.finderCNAregioonsOverlaping(CNA_list)
+functions.createCByRegionsFile(CNA_list, CNA_regions, overlap_dict)
 
 # Preparing of CNA and SNV overlapping
-functions. createCChrFile(CNA_list)
-
-
+functions.createYFile(SNV_list, CNA_regions)
+print('----createYFile was done---')
 

@@ -12,11 +12,13 @@ R <- read.table('Rout.txt', header = T) ## mutant allele read depth (for SNAs)
 rownames(R) <- R[,1]
 R$mut <- NULL
 R <- as.matrix(R)
+R <- na.omit(R)
 
 X <- read.table('Xout.txt', header = T) ## total depth (for SNAs)
 rownames(X) <- X[,1]
 X$mut <- NULL
 X <- as.matrix(X)
+X <- na.omit(X)
 
 WM <- read.table('WMout.txt', header = T)  ## observed major copy number (for CNA regions)
 rownames(WM) <- WM[,1]
@@ -44,14 +46,64 @@ Y <- as.matrix(Y)
 #######################################################
 #######################################################
 #######                                         #######
+#######              SNV Clustering             #######
+#######                                         #######
+#######################################################
+#######################################################
+num_cluster=2:6 # Range of number of clusters to run
+num_run=6 # How many EM runs per clustering step for each mutation cluster wave
+canopy.cluster=canopy.cluster(R = R, X = X, num_cluster = num_cluster, num_run = num_run)
+
+bic_output=canopy.cluster$bic_output
+sna_cluster=canopy.cluster$sna_cluster
+
+'''
+R.qc=R[sna_cluster<=4,] # exclude mutations in the noise cluster
+X.qc=X[sna_cluster<=4,]
+sna_cluster.qc=sna_cluster[sna_cluster<=4]
+R.cluster=round(Mu*100)
+X.cluster=pmax(R.cluster,100)
+rownames(R.cluster)=rownames(X.cluster)=paste('SNA.cluster',1:4,sep='')
+'''
+#######################################################
+#######################################################
+#######                                         #######
+#######      MCMC sampling by clusters          #######
+#######                                         #######
+#######################################################
+#######################################################
+sampchain = canopy.sample.cluster(R = R, X = X, sna_cluster = sna_cluster, 
+                                  WM = WM, Wm = Wm, epsilonM = epsilonM, 
+                                  epsilonm = epsilonm, C = C, Y = Y, K = K, 
+                                  numchain = numchain, max.simrun = 100000,
+                                  min.simrun = 20000, writeskip = 200,
+                                  projectname = projectname, cell.line = TRUE,
+                                  plot.likelihood = TRUE)
+
+#######################################################
+#######################################################
+#######                                         #######
+#######       MCMC sampling without CNAs        #######
+#######                                         #######
+#######################################################
+#######################################################
+K = 3:10 # number of subclones
+numchain = 8 # number of chains with random initiations
+sampchain = canopy.sample.nocna(R = R, X = X, K = K, numchain = numchain, 
+                                max.simrun = 50000, min.simrun = 10000, writeskip = 200, projectname = projectname)
+
+
+#######################################################
+#######################################################
+#######                                         #######
 #######               MCMC sampling             #######
 #######                                         #######
 #######################################################
 #######################################################
-K = 4:7 # number of subclones
-numchain = 8 # number of chains with random initiations
+K = 3:6 # number of subclones
+numchain = 4 # number of chains with random initiations
 sampchain = canopy.sample(R = R, X = X, WM = WM, Wm = Wm, epsilonM = epsilonM, 
-                          epsilonm = epsilonm, Y = Y, C = C, K = K, 
+                          epsilonm = epsilonm, Y = Y, C = NULL, K = K, 
                           numchain = numchain, max.simrun = 100000,
                           min.simrun = 20000, writeskip = 200,
                           projectname = projectname, cell.line = TRUE,
@@ -67,8 +119,6 @@ save.image(file = paste(projectname, '_postmcmc_image.rda',sep=''),
 #######                                         #######
 #######################################################
 #######################################################
-library(Canopy)
-projectname='MDA231'
 load(paste(projectname, '_postmcmc_image.rda', sep=''))
 burnin = 100
 thin = 5
