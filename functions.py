@@ -79,6 +79,7 @@ def fullDictCNA(f_rName, samples_list):
         CNA_dict[sample_name][str(cna[0]) + ':' + str(cna[1]) + ':' + str(cna[2])] = [line[5].strip('"'), line[6].strip('"')]
         line = f_r.readline().strip().split()
     f_r.close()
+    print(str(len(cna_list)) + ' CNA events was detected')
     return CNA_dict, cna_list
 
 # Take dictionary with CNA and write WM and Wm file
@@ -104,25 +105,28 @@ def writeFileWsByDictCNA(file_dict, cna_list, WM = 'WMout.txt', Wm = 'Wmout.txt'
     f_wWm.close()
 
 # Take file with SNV and return list of target columns and list of samples name
-def sampleNameFinderSNV(f_rName, IDfilterc =  True):
+def sampleNameFinderSNV(f_rName, IDfilter =  True,  NormFilter = ''):
     f_r = open(f_rName, 'r')
     heder = f_r.readline().strip().split()
-    if IDfilterc:
+    if IDfilter:
         col_map = [0, 1, 4]
     else:
-        col_map = [0, 1, 4]
+        col_map = [0, 1]
     name_list = []
+    col_norm = 0
     for i in range(len(heder)):
         if heder[i].find('.AD') != -1:
             col_map.append(i)
             name_list.append(heder[i].replace('.AD', ''))
+            if NormFilter != '' and name_list[-1].find(NormFilter) != -1:
+                col_norm = i
         if heder[i].find('.DP') != -1:
             col_map.append(i)
     f_r.close()
-    return col_map, name_list
+    return col_map, name_list, col_norm
 
 # Take file with SNV, list of column and samples names and return X and R matrixs
-def fullMatrixXR(f_rName, col_map, IDfilter = True):
+def fullMatrixXR(f_rName, col_map, IDfilter = True, col_norm = 0):
     f_r = open(f_rName, 'r')
     SNV_list = []
     R_matrix = []
@@ -131,10 +135,13 @@ def fullMatrixXR(f_rName, col_map, IDfilter = True):
     line = f_r.readline()
     while line != '':
         l = line.strip().split()
-        if (l[col_map[0]]+l[col_map[1]]).find('NA') != -1:
+        if (l[col_map[0]] + ' ' + l[col_map[1]]).find('NA') != -1:
             line = f_r.readline()
             continue
         if IDfilter and len(l[col_map[2]].strip('"')) <= 2:
+            line = f_r.readline()
+            continue
+        if col_norm != 0 and int(l[col_norm].split(',')[1].strip('"')) != 0:
             line = f_r.readline()
             continue
         R = []
@@ -165,6 +172,7 @@ def fullMatrixXR(f_rName, col_map, IDfilter = True):
         X_matrix.append(X)
         line = f_r.readline()
     f_r.close()
+    print(str(len(SNV_list)) + ' SNAs was detected')
     return R_matrix, X_matrix, SNV_list
 
 # Take X and R matrixs SNV and write X and R file
@@ -215,14 +223,14 @@ def createYFile(SNV_list, CNA_regions, f_wName = 'Yout.txt'):
     f_w = open(f_wName, 'w')
     f_w.write('mut\tnon-cna_region')
     for i in CNA_regions:
-        f_w.write('\t' + str(i[0]) + ':' + str(i[1])+ ':' + str(i[2]))
+        f_w.write('\t' + str(i[1]) + ':' + str(i[2])+ ':' + str(i[3]))
     f_w.write('\n')
     for i in SNV_list:
         f_w.write(str(i[0]) + ':' + str(i[1]))
         line = ''
         non_CNA = True
         for j in CNA_regions:
-            if i[0] == j[0] and i[1] >= j[1] and i[1] <= j[2]:
+            if i[0] == j[1] and i[1] >= j[2] and i[1] <= j[3]:
                 line += '\t1'
                 non_CNA = False
             else:
@@ -234,6 +242,7 @@ def createYFile(SNV_list, CNA_regions, f_wName = 'Yout.txt'):
         f_w.write(line)
         f_w.write('\n')
     f_w.close()
+
 
 # create C file with ovelopping of CNA segments by CNA lists
 def createCFile(CNA_list, f_wName = 'Cout.txt'):
@@ -330,6 +339,7 @@ def finderCNAregioonsOverlaping(CNA_list):
         overlap_dict[number_code] = [i]
         number_code += 1
     CNA_regions.pop(0)
+    print(str(len(CNA_regions)) + ' CNA regions was detected')
     return overlap_dict, CNA_regions
 
 
