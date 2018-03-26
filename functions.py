@@ -104,7 +104,7 @@ def writeFileWsByDictCNA(file_dict, cna_list, WM = 'WMout.txt', Wm = 'Wmout.txt'
     f_wWM.close()
     f_wWm.close()
 
-# Take file with SNV and return list of target columns and list of samples name
+# Take file with SNV and return list of target columns and list of samples name as well as data about normal sample
 def sampleNameFinderSNV(f_rName, IDfilter =  True,  NormFilter = ''):
     f_r = open(f_rName, 'r')
     heder = f_r.readline().strip().split()
@@ -120,6 +120,7 @@ def sampleNameFinderSNV(f_rName, IDfilter =  True,  NormFilter = ''):
             name_list.append(heder[i].replace('.AD', ''))
             if NormFilter != '' and name_list[-1].find(NormFilter) != -1:
                 col_norm = i
+                name_list.pop(-1)
         if heder[i].find('.DP') != -1:
             col_map.append(i)
     f_r.close()
@@ -157,6 +158,9 @@ def fullMatrixXR(f_rName, col_map, IDfilter = True, col_norm = 0):
         while i < len(col_map):
             if len(l[col_map[i]].split(',')) <= 1:
                 isNA = True
+                break
+            if col_norm != 0 and i == col_norm:
+                i += 2
                 break
             R.append(int(l[col_map[i]].split(',')[1].strip('"')))
             X.append(int(l[col_map[i + 1]].strip('"')))
