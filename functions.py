@@ -54,7 +54,7 @@ def fullDictCNA(f_rName, samples_list):
         # Adecvati check
         if line[5].strip('"') == '1' and line[6].strip('"') == '1':
             line = f_r.readline().strip().split()
-            break
+            continue
         # Save coordinates of segment
         cna = [int(line[2].strip('"').replace('chr', '').replace('X', '23').replace('Y', '24').replace('M', '25')), int(line[3].strip('"')), int(line[4].strip('"'))]
 
@@ -117,7 +117,7 @@ def sampleNameFinderSNV(f_rName, IDfilter =  True,  NormFilter = ''):
     for i in range(len(heder)):
         if heder[i].find('.AD') != -1:
             col_map.append(i)
-            name_list.append(heder[i].replace('.AD', ''))
+            name_list.append(heder[i].replace('.AD', '').strip('"'))
             if NormFilter != '' and name_list[-1].find(NormFilter) != -1:
                 col_norm = i
                 name_list.pop(-1)
@@ -159,9 +159,9 @@ def fullMatrixXR(f_rName, col_map, IDfilter = True, col_norm = 0):
             if len(l[col_map[i]].split(',')) <= 1:
                 isNA = True
                 break
-            if col_norm != 0 and i == col_norm:
+            if col_norm != 0 and col_map[i] == col_norm:
                 i += 2
-                break
+                continue
             R.append(int(l[col_map[i]].split(',')[1].strip('"')))
             X.append(int(l[col_map[i + 1]].strip('"')))
             i += 2
