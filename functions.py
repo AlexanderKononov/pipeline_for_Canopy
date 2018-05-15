@@ -223,7 +223,7 @@ def sampleFilerToCNAFile(f_rName, sample_names, f_wName = 'CNA_for_target_patien
     f_w.write(line)
     for line in f_r:
         l = line.strip().split()
-        if int(l[5].strip('"')) == 2 and int(l[6].strip('"')) == 2: continue
+        if int(l[5].strip('"')) == 1 and int(l[6].strip('"')) == 1: continue
         for i in sample_names:
             if l[1].strip().strip('"').find(i.strip().strip('"')) != -1:
                 f_w.write(line)
