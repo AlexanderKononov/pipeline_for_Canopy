@@ -52,8 +52,8 @@ save.image(file = paste0(projectname,'.Rdata'))
 #######                                         #######
 #######################################################
 #######################################################
-num_cluster=3:7 # Range of number of clusters to run
-num_run=7 # How many EM runs per clustering step for each mutation cluster wave
+num_cluster=3:6 # Range of number of clusters to run
+num_run=15 # How many EM runs per clustering step for each mutation cluster wave
 canopy.cluster=canopy.cluster(R = R, X = X, num_cluster = num_cluster, num_run = num_run)
 
 #bic_output=canopy.cluster$bic_output
@@ -68,8 +68,8 @@ save.image(file = paste0(projectname,'.Rdata'))
 #######################################################
 #######################################################
 #######################################################
-K = 3:7 # number of subclones
-numchain = 7 # number of chains with random initiations
+K = 2:4 # number of subclones
+numchain = 4 # number of chains with random initiations
 sampchain = canopy.sample.cluster(R = R, X = X, sna_cluster = sna_cluster, 
                                   WM = WM, Wm = Wm, epsilonM = epsilonM, 
                                   epsilonm = epsilonm, C = C, Y = Y, K = K, 

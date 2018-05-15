@@ -15,11 +15,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="file_adapter_to_Canopy.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="file_adapter_to_Canopy.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/file_adapter_to_Canopy.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="15" column="39" lean-forward="false" selection-start-line="15" selection-start-column="39" selection-end-line="15" selection-end-column="39" />
+            <state relative-caret-position="210">
+              <caret line="14" column="29" lean-forward="false" selection-start-line="14" selection-start-column="29" selection-end-line="14" selection-end-column="29" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -27,11 +27,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="functions.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="functions.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/functions.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="525">
-              <caret line="59" column="0" lean-forward="true" selection-start-line="59" selection-start-column="0" selection-end-line="59" selection-end-column="0" />
+            <state relative-caret-position="225">
+              <caret line="225" column="12" lean-forward="false" selection-start-line="225" selection-start-column="12" selection-end-line="225" selection-end-column="12" />
               <folding />
             </state>
           </provider>
@@ -65,8 +65,8 @@
         <option value="$PROJECT_DIR$/cuter.py" />
         <option value="$PROJECT_DIR$/run_by_patient.sh" />
         <option value="$PROJECT_DIR$/pipeline_Canopy_with_clustering.R" />
-        <option value="$PROJECT_DIR$/functions.py" />
         <option value="$PROJECT_DIR$/file_adapter_to_Canopy.py" />
+        <option value="$PROJECT_DIR$/functions.py" />
       </list>
     </option>
   </component>
@@ -247,7 +247,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="360">
           <caret line="24" column="22" lean-forward="false" selection-start-line="24" selection-start-column="22" selection-end-line="24" selection-end-column="22" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -271,7 +270,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="120">
           <caret line="8" column="64" lean-forward="false" selection-start-line="8" selection-start-column="64" selection-end-line="8" selection-end-column="64" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -305,7 +303,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="120">
           <caret line="8" column="64" lean-forward="false" selection-start-line="8" selection-start-column="64" selection-end-line="8" selection-end-column="64" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -339,7 +336,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="120">
           <caret line="8" column="64" lean-forward="false" selection-start-line="8" selection-start-column="64" selection-end-line="8" selection-end-column="64" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -373,7 +369,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="135">
           <caret line="9" column="8" lean-forward="false" selection-start-line="9" selection-start-column="8" selection-end-line="9" selection-end-column="8" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -634,7 +629,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="120">
           <caret line="8" column="64" lean-forward="false" selection-start-line="8" selection-start-column="64" selection-end-line="8" selection-end-column="64" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -642,7 +636,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="360">
           <caret line="24" column="22" lean-forward="false" selection-start-line="24" selection-start-column="22" selection-end-line="24" selection-end-column="22" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -654,21 +647,21 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/functions.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="525">
-          <caret line="59" column="0" lean-forward="true" selection-start-line="59" selection-start-column="0" selection-end-line="59" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/file_adapter_to_Canopy.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="39" lean-forward="false" selection-start-line="15" selection-start-column="39" selection-end-line="15" selection-end-column="39" />
+        <state relative-caret-position="210">
+          <caret line="14" column="29" lean-forward="false" selection-start-line="14" selection-start-column="29" selection-end-line="14" selection-end-column="29" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/functions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="225">
+          <caret line="225" column="12" lean-forward="false" selection-start-line="225" selection-start-column="12" selection-end-line="225" selection-end-column="12" />
+          <folding />
         </state>
       </provider>
     </entry>

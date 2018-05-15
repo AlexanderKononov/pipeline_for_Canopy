@@ -172,6 +172,15 @@ def fullMatrixXR(f_rName, col_map, IDfilter = True, col_norm = 0):
             SNV_list.pop(-1)
             line = f_r.readline()
             continue
+        '''
+        check_sum = 1
+        for i in range(1, len(R)):
+            if R[i] == 0: check_sum = 0
+        if check_sum == 0:
+            SNV_list.pop(-1)
+            line = f_r.readline()
+            continue
+        '''
         R_matrix.append(R)
         X_matrix.append(X)
         line = f_r.readline()
@@ -214,6 +223,7 @@ def sampleFilerToCNAFile(f_rName, sample_names, f_wName = 'CNA_for_target_patien
     f_w.write(line)
     for line in f_r:
         l = line.strip().split()
+        if int(l[5].strip('"')) == 2 and int(l[6].strip('"')) == 2: continue
         for i in sample_names:
             if l[1].strip().strip('"').find(i.strip().strip('"')) != -1:
                 f_w.write(line)
