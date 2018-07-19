@@ -52,7 +52,7 @@ save.image(file = paste0(projectname,'.Rdata'))
 #######                                         #######
 #######################################################
 #######################################################
-num_cluster=3:6 # Range of number of clusters to run
+num_cluster=2:3 # Range of number of clusters to run
 num_run=15 # How many EM runs per clustering step for each mutation cluster wave
 canopy.cluster=canopy.cluster(R = R, X = X, num_cluster = num_cluster, num_run = num_run)
 
@@ -68,7 +68,7 @@ save.image(file = paste0(projectname,'.Rdata'))
 #######################################################
 #######################################################
 #######################################################
-K = 2:4 # number of subclones
+K = 3:4 # number of subclones
 numchain = 4 # number of chains with random initiations
 sampchain = canopy.sample.cluster(R = R, X = X, sna_cluster = sna_cluster, 
                                   WM = WM, Wm = Wm, epsilonM = epsilonM, 
@@ -88,7 +88,7 @@ save.image(file = paste0(projectname,'.Rdata'))
 #######################################################
 
 burnin = 50
-thin = 5
+thin = 15
 # If pdf = TRUE, a pdf will be generated.
 bic = canopy.BIC(sampchain = sampchain, projectname = projectname, K = K,
                  numchain = numchain, burnin = burnin, thin = thin, pdf = TRUE)
@@ -131,3 +131,41 @@ pdf.name = paste(projectname, '_config_highest_likelihood.pdf', sep='')
 canopy.plottree(output.tree, pdf = TRUE, pdf.name = pdf.name)
 
 save.image(file = paste0(projectname,'.Rdata'))
+#######################################################
+#######################################################
+#######                                         #######
+#######          stattistic for compere         #######
+#######                                         #######
+#######################################################
+#######################################################
+Z_pred = output.tree$Z
+Z_true <- read.table('Z_true.csv', sep="\t", header = T)
+rownames(Z_true) <- Z_true$chr.pos
+Z_true$chr.pos <- NULL
+write.table(Z_pred, "Z_pred.txt", sep="\t")
+
+Z_pred2 = Z_pred[rownames(Z_pred) %in% intersect(rownames(Z_true),rownames(Z_pred)), ]
+Z_true2 = Z_true[rownames(Z_true) %in% intersect(rownames(Z_true),rownames(Z_pred)), ]
+
+all_ = expand.grid(1:ncol(Z_pred2),1:ncol(Z_pred2),1:ncol(Z_pred2),1:ncol(Z_pred2),1:ncol(Z_pred2))
+all_ = all_[sapply(1:nrow(all_), function(i) !any(duplicated(as.numeric(all_[i,])))),]
+
+
+cols=as.numeric(all_[which.max(sapply(1:nrow(all_), function(i) sum(Z_pred2[,as.numeric(all_[i,])] == Z_true2))),])
+cols_=as.numeric(max(sapply(1:nrow(all_), function(i) sum(Z_pred2[,as.numeric(all_[i,])] == Z_true2))))
+
+cols
+
+cols_
+sum(Z_pred2[,4]==0)
+length(Z_pred2)
+(cols_+sum(Z_pred2[,4]==0))/length(Z_pred2)
+
+P_pred = output.tree$P
+View(P_pred)
+save.image(file = paste0(projectname,'.Rdata'))
+
+D <- sapply(1:nrow(Z_pred2), function(i) sapply(1:nrow(Z_true2),
+                                           function(j) length(Z_pred2[i,])-abs((sum(Z_true2[i,] == Z_true2[j,])+1)-sum(Z_pred2[i,] == Z_pred2[j,]))))
+D_est <-sum(D)/(length(D)*length(Z_pred2[1,]))
+D_est

@@ -97,32 +97,75 @@ def writeFileWsByDictCNA(file_dict, cna_list, WM = 'WMout.txt', Wm = 'Wmout.txt'
         f_wWM.write(str(i[0]) + ':' + str(i[1]) + ':' + str(i[2]))
         f_wWm.write(str(i[0]) + ':' + str(i[1]) + ':' + str(i[2]))
         for j in file_dict.keys():
-            f_wWM.write('\t' + file_dict[j][str(i[0]) + ':' + str(i[1]) + ':' + str(i[2])][0])
-            f_wWm.write('\t' + file_dict[j][str(i[0]) + ':' + str(i[1]) + ':' + str(i[2])][1])
+            f_wWM.write('\t' + str(float(file_dict[j][str(i[0]) + ':' + str(i[1]) + ':' + str(i[2])][0])))
+            f_wWm.write('\t' + str(float(file_dict[j][str(i[0]) + ':' + str(i[1]) + ':' + str(i[2])][1])))
         f_wWM.write('\n')
         f_wWm.write('\n')
     f_wWM.close()
     f_wWm.close()
 
 # Take file with SNV and return list of target columns and list of samples name as well as data about normal sample
-def sampleNameFinderSNV(f_rName, IDfilter =  True,  NormFilter = ''):
+def sampleNameFinderSNV(f_rName, IDfilter =  True,  NormFilter = '', includes = []):
     f_r = open(f_rName, 'r')
     heder = f_r.readline().strip().split()
+
     if IDfilter:
         col_map = [0, 1, 4]
     else:
         col_map = [0, 1]
     name_list = []
     col_norm = 0
+    samples_dict = {}
     for i in range(len(heder)):
         if heder[i].find('.AD') != -1:
+            samples_dict[heder[i].replace('.AD', '').strip('"')] = [i]
+
             col_map.append(i)
             name_list.append(heder[i].replace('.AD', '').strip('"'))
             if NormFilter != '' and name_list[-1].find(NormFilter) != -1:
                 col_norm = i
                 name_list.pop(-1)
+                continue
+            if len(includes) != 0:
+                col_map.pop(-1)
+                name_list.pop(-1)
+                for include in includes:
+                    if heder[i].replace('.AD', '').strip('"') == include:
+                        col_map.append(i)
+                        name_list.append(heder[i].replace('.AD', '').strip('"'))
         if heder[i].find('.DP') != -1:
+            samples_dict[heder[i].replace('.DP', '').strip('"')].append(i)
+            if len(includes) != 0:
+                for include in includes:
+                    if heder[i].replace('.DP', '').strip('"') == include:
+                        col_map.append(i)
             col_map.append(i)
+
+    if IDfilter:
+        col_map = [0, 1, 4]
+    else:
+        col_map = [0, 1]
+    name_list = []
+    col_norm = 0
+    for sample in samples_dict.keys():
+        if sample.find(NormFilter) != -1:
+            col_map.append(samples_dict[sample][0])
+            col_norm = samples_dict[sample][0]
+            continue
+        if len(includes) != 0:
+            for include in includes:
+                if include == sample:
+                    name_list.append(sample)
+                    col_map.append(samples_dict[sample][0])
+                    col_map.append(samples_dict[sample][1])
+                    break
+        else:
+            name_list.append(sample)
+            col_map.append(samples_dict[sample][0])
+            col_map.append(samples_dict[sample][1])
+
+    print(col_map)
+    print(name_list)
     f_r.close()
     return col_map, name_list, col_norm
 
@@ -160,7 +203,7 @@ def fullMatrixXR(f_rName, col_map, IDfilter = True, col_norm = 0):
                 isNA = True
                 break
             if col_norm != 0 and col_map[i] == col_norm:
-                i += 2
+                i += 1
                 continue
             R.append(int(l[col_map[i]].split(',')[1].strip('"')))
             X.append(int(l[col_map[i + 1]].strip('"')))
@@ -223,7 +266,7 @@ def sampleFilerToCNAFile(f_rName, sample_names, f_wName = 'CNA_for_target_patien
     f_w.write(line)
     for line in f_r:
         l = line.strip().split()
-        if int(l[5].strip('"')) == 1 and int(l[6].strip('"')) == 1: continue
+        if float(l[5].strip('"')) == 1.0 and float(l[6].strip('"')) == 1.0: continue
         for i in sample_names:
             if l[1].strip().strip('"').find(i.strip().strip('"')) != -1:
                 f_w.write(line)
